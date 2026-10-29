@@ -166,6 +166,35 @@ button,a,label,input,select{touch-action:manipulation;-webkit-tap-highlight-colo
 .log-total{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--muted);padding:12px 16px;border-top:1px solid var(--line)}
 .log-total b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
 
+/* Search extras */
+.sq-row{display:flex;gap:8px;align-items:center}
+.sq-row input{flex:1}
+.scan-btn{display:flex;gap:6px;align-items:center;flex:none;min-height:44px}
+.scan-btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.res .src{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--xp);border:1px solid color-mix(in srgb,var(--xp) 50%,transparent);border-radius:4px;padding:0 4px;margin-left:6px;vertical-align:1px}
+.scan-box{width:100%;min-height:220px;border-radius:12px;overflow:hidden;background:var(--bg);border:1px solid var(--line)}
+.scan-box video{width:100%!important;height:auto!important;display:block}
+
+/* Workout editor */
+.ed-l{font-size:12px;font-weight:600;color:var(--muted)}
+.ed-in{height:44px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:0 12px;font-size:16px;min-width:0;width:100%;box-sizing:border-box}
+.ed-row{border-top:1px solid var(--line);padding:12px 16px;display:grid;gap:8px}
+.ed-top{display:flex;gap:8px;align-items:center}
+.ed-name{flex:1;font-weight:600}
+.ed-ctl{display:flex;gap:4px;flex:none}
+.ed-ctl .icon-btn{width:36px;height:36px}
+.ed-ctl .icon-btn:disabled{opacity:.3;cursor:default}
+.ed-nums{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;font-size:13px;color:var(--muted);font-weight:600}
+.ed-nums label{display:flex;gap:6px;align-items:center}
+.ed-num{width:64px;text-align:center;font:600 18px/1 var(--display)}
+.ed-dash{color:var(--muted)}
+.ed-opt{margin-left:auto}
+.ed-opt input{width:18px;height:18px;accent-color:var(--lift)}
+.ed-add{border-top:1px solid var(--line);padding:12px 16px}
+.ed-days{border-top:1px solid var(--line);padding:12px 16px;display:grid;gap:8px}
+.ed-msg{padding:0 16px}
+.card-title .link-btn{flex:none}
+
 /* Progress view */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px 14px}
 .stat{display:grid;gap:2px}
@@ -325,9 +354,12 @@ details.data summary{cursor:pointer;color:var(--muted);font-weight:600}
 .sh input,.sh select,.sh textarea{width:100%;min-height:44px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:8px 12px;font-size:16px;min-width:0}
 .sh textarea{min-height:88px;resize:vertical;line-height:1.4}
 .res{display:grid;border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.res > button{appearance:none;background:none;border:0;border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;cursor:pointer;align-items:center}
-.res > button:last-child{border-bottom:0}
-.res > button:hover{background:color-mix(in srgb,var(--meal) 6%,transparent)}
+.res > button,#brandRes > button{appearance:none;background:none;border:0;border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;cursor:pointer;align-items:center}
+.res > button:last-child,#brandRes > button:last-child{border-bottom:0}
+.res > button:hover,#brandRes > button:hover{background:color-mix(in srgb,var(--meal) 6%,transparent)}
+#brandRes{display:grid}
+#brandRes:empty{display:none}
+.res > button + #brandRes,.res > .none + #brandRes{border-top:1px solid var(--line)}
 .res .grp{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 12px 6px;background:var(--bg);border-bottom:1px solid var(--line)}
 .res .none{padding:14px 12px;color:var(--muted);font-size:14px}
 .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:10px}
@@ -403,7 +435,7 @@ details.data summary{cursor:pointer;color:var(--muted);font-weight:600}
     <div class="view" id="v-food" hidden>
       <section id="foodOverview" aria-label="Today's calories and macros"></section>
       <div class="view" id="foodMeals"></div>
-      <p class="sub">Values are typical UK figures; check the label when you can. The UK food database is McCance and Widdowson's Composition of Foods Integrated Dataset 2021 (Public Health England), used under the Open Government Licence v3.0.</p>
+      <p class="sub">Values are typical UK figures; check the label when you can. The UK food database is McCance and Widdowson's Composition of Foods Integrated Dataset 2021 (Public Health England), used under the Open Government Licence v3.0. Branded products come from Open Food Facts (openfoodfacts.org), shared under the Open Database Licence.</p>
     </div>
 
     <div class="view" id="v-log" hidden>
@@ -609,7 +641,7 @@ details.data summary{cursor:pointer;color:var(--muted);font-weight:600}
     return (((dayNum(id) + s*2) % n) + n) % n;
   }
   const mealOf = (id, s) => MEALS[s].options[mealIdx(id, s)];
-  const WORKOUTS = {
+  const DEFAULT_WORKOUTS = {
     A:{focus:"Squat and bench", ex:[["Back squat","3 × 6–8"],["Bench press","3 × 6–10"],["Barbell row","3 × 8–12"],["Romanian deadlift","2 × 8–10"],["Dumbbell lateral raise","2 × 12–15"],["Dumbbell curl","2 × 10–15"]]},
     B:{focus:"Deadlift and overhead", ex:[["Deadlift","3 × 5–6"],["Overhead press","3 × 6–10"],["Pull-ups or lat pulldown","3 × 8–12"],["Bulgarian split squat","2 × 8–12 each leg"],["Incline dumbbell press","2 × 8–12"],["Triceps rope pushdown","2 × 10–15"]]},
     C:{focus:"Machines and dumbbells", ex:[["Leg press","3 × 10–12"],["Dumbbell bench press","3 × 8–12"],["Seated cable row","3 × 10–12"],["Lying leg curl","2 × 10–15"],["Cable lateral raise","2 × 12–15"],["Hammer curl","2 × 10–12"],["Standing calf raise","2 × 10–15",true]]},
@@ -618,7 +650,31 @@ details.data summary{cursor:pointer;color:var(--muted);font-weight:600}
     F:{focus:"Volume and isolation", ex:[["Goblet squat or leg extension","3 × 12–15"],["Flat dumbbell bench press","3 × 8–12"],["Single-arm dumbbell row","3 × 10–12"],["Seated leg curl","2 × 10–15"],["Dumbbell lateral raise","2 × 12–15"],["Overhead triceps extension","2 × 10–12"],["Standing calf raise","2 × 10–15",true]]}
   };
   const LETTERS = "ABCDEF".split("");
-  const SLOT = {2:0, 4:1, 6:2}; // Tue, Thu, Sat
+  const DEFAULT_DAYS = [2, 4, 6]; // Tue, Thu, Sat
+  const DOW_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  Object.keys(DEFAULT_WORKOUTS).forEach(L => DEFAULT_WORKOUTS[L].ex.forEach((e,i) => { e[2] = !!e[2]; e[3] = L + i; }));
+  // The person's own plan: edited workouts, training days, and a registry of every exercise id ever used
+  let planDoc = {};
+  let WORKOUTS = {}, SLOT = {}, EXNAMES = {};
+  const cloneW = w => JSON.parse(JSON.stringify(w));
+  function applyPlan(){
+    const w = cloneW(DEFAULT_WORKOUTS);
+    const pw = planDoc && planDoc.workouts;
+    if (pw && typeof pw === "object") LETTERS.forEach(L => {
+      const x = pw[L];
+      if (x && Array.isArray(x.ex) && x.ex.length) w[L] = {focus: String(x.focus || w[L].focus).slice(0, 60),
+        ex: x.ex.filter(e => Array.isArray(e) && e[0] && /^\d+\s*×\s*\d+/.test(String(e[1]))).map(e => [String(e[0]).slice(0, 60), String(e[1]).slice(0, 40), !!e[2], String(e[3] || "")])};
+    });
+    WORKOUTS = w;
+    const ds = Array.isArray(planDoc && planDoc.days) && planDoc.days.length === 3 ? planDoc.days.map(Number).filter(n => n >= 0 && n <= 6) : DEFAULT_DAYS;
+    const sorted = (new Set(ds).size === 3 ? ds : DEFAULT_DAYS).slice().sort((a,b) => ((a+6)%7) - ((b+6)%7));
+    SLOT = {}; sorted.forEach((d, i) => { SLOT[d] = i; });
+    EXNAMES = {};
+    Object.keys(DEFAULT_WORKOUTS).forEach(L => DEFAULT_WORKOUTS[L].ex.forEach(e => { EXNAMES[e[3]] = e[0]; }));
+    if (planDoc && planDoc.names && typeof planDoc.names === "object") Object.keys(planDoc.names).forEach(k => { EXNAMES[k] = String(planDoc.names[k]); });
+    LETTERS.forEach(L => WORKOUTS[L].ex.forEach((e,i) => { if (!e[3]) e[3] = L + i; EXNAMES[e[3]] = e[0]; }));
+  }
+  const trainDays = () => Object.keys(SLOT).map(Number).sort((a,b) => SLOT[a] - SLOT[b]);
   const DEFAULT_CYCLE_START = "2026-10-26"; // Monday of week 1 (A, B, C)
   const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
   const SES_RE = /^w-(\d{4}-\d{2}-\d{2})$/;
@@ -666,12 +722,14 @@ details.data summary{cursor:pointer;color:var(--muted);font-weight:600}
       if (s && s.days) days = s.days;
       if (s && s.sessions) sessions = s.sessions;
       if (s && Array.isArray(s.myFoods)) myFoods = s.myFoods;
+      if (s && s.plan && typeof s.plan === "object") planDoc = s.plan;
       if (s && s.settings && s.settings.cycleStart) settings = s.settings;
     }
     liftPick = localStorage.getItem(LS_PICK);
   } catch(e) {}
-  function saveLocal(){ try { localStorage.setItem(LS_KEY, JSON.stringify({days, sessions, settings, myFoods})); } catch(e) {} }
+  function saveLocal(){ try { localStorage.setItem(LS_KEY, JSON.stringify({days, sessions, settings, myFoods, plan: planDoc})); } catch(e) {} }
 
+  applyPlan();
   function cycleWeek(id){
     const weeks = Math.round((parse(mondayOf(id)) - parse(settings.cycleStart || DEFAULT_CYCLE_START)) / (7*864e5));
     return ((weeks % 2) + 2) % 2 === 0 ? 1 : 2;
@@ -718,11 +776,12 @@ details.data summary{cursor:pointer;color:var(--muted);font-weight:600}
 
   // ---- Workout log helpers ----
   const sesDates = () => Object.keys(sessions).sort();
-  const setsOf = (date, L, i) => { const s = sessions[date]; return (s && s.ex && s.ex[L+i]) || []; };
+  const exId = (L, i) => (WORKOUTS[L].ex[i] || [])[3] || (L + i);
+  const setsOf = (date, L, i) => { const s = sessions[date]; return (s && s.ex && s.ex[exId(L, i)]) || []; };
   const hasSets = arr => arr.some(Boolean);
   function sessionLetters(date){
     const s = sessions[date]; if (!s || !s.ex) return [];
-    return LETTERS.filter(L => WORKOUTS[L].ex.some((e,i)=>hasSets(s.ex[L+i]||[])));
+    return LETTERS.filter(L => WORKOUTS[L].ex.some((e,i)=>hasSets(s.ex[exId(L,i)]||[])));
   }
   function lastSessionOf(L, before){
     const ds = sesDates();
@@ -739,10 +798,11 @@ details.data summary{cursor:pointer;color:var(--muted);font-weight:600}
     }
     for (let k=ds.length-1;k>=0;k--){
       const d = ds[k]; if (d >= before) continue;
-      for (const M of LETTERS) {
-        if (M === L) continue;
-        const j = WORKOUTS[M].ex.findIndex(e => e[0] === name);
-        if (j >= 0 && hasSets(setsOf(d, M, j))) return {date:d, sets:setsOf(d, M, j), from:M};
+      const ex = (sessions[d] && sessions[d].ex) || {};
+      for (const key in ex) {
+        if (key === exId(L, i) || EXNAMES[key] !== name || !hasSets(ex[key])) continue;
+        const M = LETTERS.find(x => WORKOUTS[x].ex.some(e => e[3] === key));
+        return {date:d, sets:ex[key], from: M && M !== L ? M : null};
       }
     }
     return null;
@@ -814,7 +874,7 @@ details.data summary{cursor:pointer;color:var(--muted);font-weight:600}
     const st = streak();
     const a7 = avgWeight(addDays(t,-6), t), p7 = avgWeight(addDays(t,-13), addDays(t,-7));
     let sum = '<span>Streak <b>'+st+(st===1?' day':' days')+'</b></span>';
-    sum += '<span>Week '+cycleWeek(sel)+' <b>'+(cycleWeek(sel)===1?"A · B · C":"D · E · F")+'</b></span>';
+    sum += '<span>Week '+cycleWeek(sel)+' <b>'+(cycleWeek(sel)===1?"A · B · C":"D · E · F")+'</b> on '+trainDays().map(d => DOW_NAMES[d]).join(", ")+'</span>';
     if (a7 !== null) {
       let delta = "";
       if (p7 !== null) { const dd = a7 - p7; delta = ' ('+(dd>=0?"+":"−")+Math.abs(dd).toFixed(1)+')'; }
@@ -858,10 +918,12 @@ details.data summary{cursor:pointer;color:var(--muted);font-weight:600}
   const topSet = sets => sets.reduce((a,s) => (!a || s.w > a.w || (s.w === a.w && s.r > a.r)) ? s : a, null);
   function liftHistory(){
     const hist = {};
-    sesDates().forEach(d => LETTERS.forEach(L => WORKOUTS[L].ex.forEach((e,i) => {
-      const sets = setsOf(d, L, i).filter(Boolean); if (!sets.length) return;
-      (hist[e[0]] = hist[e[0]] || []).push({d, top: topSet(sets), sets});
-    })));
+    sesDates().forEach(d => { const ex = (sessions[d] && sessions[d].ex) || {};
+      Object.keys(ex).forEach(key => {
+        const name = EXNAMES[key]; const sets = (ex[key] || []).filter(Boolean); if (!name || !sets.length) return;
+        (hist[name] = hist[name] || []).push({d, top: topSet(sets), sets});
+      });
+    });
     return hist;
   }
   function prsFrom(hist, id){
@@ -1108,16 +1170,114 @@ details.data summary{cursor:pointer;color:var(--muted);font-weight:600}
     const done = sessionLetters(sel); if (done.length) return done[done.length-1];
     const nx = nextWorkoutFrom(sel); return nx ? nx.L : "A";
   }
+
+  // ---- Workout editor ----
+  let editing = null, edDraft = null;
+  function specParts(spec){
+    const m = String(spec).match(/^(\d+)\s*×\s*(\d+)(?:–(\d+))?\s*(.*)$/) || [];
+    return {sets: +m[1] || 3, lo: +m[2] || 8, hi: +(m[3] || m[2]) || 12, sfx: (m[4] || "").trim()};
+  }
+  function startEdit(L){
+    editing = L;
+    edDraft = {focus: WORKOUTS[L].focus, days: trainDays(), msg: "",
+      ex: WORKOUTS[L].ex.map(e => Object.assign({n: e[0], opt: !!e[2], id: e[3]}, specParts(e[1])))};
+    renderLog();
+    const f = $("edFocus"); if (f) f.focus();
+  }
+  function readDraft(){
+    if (!edDraft) return;
+    const f = $("edFocus"); if (f) edDraft.focus = f.value;
+    edDraft.ex.forEach((x, k) => {
+      const g = id => $(id + k);
+      if (g("edN")) x.n = g("edN").value;
+      if (g("edS")) x.sets = parseInt(g("edS").value, 10);
+      if (g("edLo")) x.lo = parseInt(g("edLo").value, 10);
+      if (g("edHi")) x.hi = parseInt(g("edHi").value, 10);
+      if (g("edO")) x.opt = g("edO").checked;
+    });
+  }
+  function renderEditor(card){
+    const L = editing, d = edDraft;
+    const known = []; Object.values(EXNAMES).concat(LETTERS.flatMap(M => DEFAULT_WORKOUTS[M].ex.map(e => e[0]))).forEach(n => { if (!known.includes(n)) known.push(n); });
+    let h = '<div class="card-head"><div class="card-title"><span class="plate"></span><h2>Edit workout '+L+'</h2></div>'+
+      '<div class="field"><label class="ed-l" for="edFocus">Name</label><input class="ed-in" id="edFocus" maxlength="60" value="'+esc(d.focus)+'"></div></div>';
+    h += '<datalist id="exList">'+known.map(n => '<option value="'+esc(n)+'"></option>').join('')+'</datalist>';
+    d.ex.forEach((x, k) => {
+      h += '<div class="ed-row"><div class="ed-top"><input class="ed-in ed-name" id="edN'+k+'" list="exList" maxlength="60" value="'+esc(x.n)+'" aria-label="Exercise '+(k+1)+' name" placeholder="Exercise name">'+
+        '<div class="ed-ctl"><button class="icon-btn" data-edup="'+k+'" aria-label="Move up"'+(k===0?' disabled':'')+'><svg viewBox="0 0 24 24"><path d="M18 15l-6-6-6 6"/></svg></button>'+
+        '<button class="icon-btn" data-eddown="'+k+'" aria-label="Move down"'+(k===d.ex.length-1?' disabled':'')+'><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>'+
+        '<button class="icon-btn" data-eddel="'+k+'" aria-label="Remove '+esc(x.n || 'exercise')+'"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>'+
+        '<div class="ed-nums"><label>Sets <input class="ed-in ed-num" id="edS'+k+'" type="number" inputmode="numeric" min="1" max="10" value="'+(x.sets||"")+'"></label>'+
+        '<label>Reps <input class="ed-in ed-num" id="edLo'+k+'" type="number" inputmode="numeric" min="1" max="50" value="'+(x.lo||"")+'"></label><span class="ed-dash">to</span>'+
+        '<input class="ed-in ed-num" id="edHi'+k+'" type="number" inputmode="numeric" min="1" max="50" value="'+(x.hi||"")+'" aria-label="Top of rep range">'+
+        '<label class="ed-opt"><input type="checkbox" id="edO'+k+'"'+(x.opt?' checked':'')+'> Optional</label></div></div>';
+    });
+    h += '<div class="ed-add"><button class="link-btn" data-edadd="1">+ Add exercise</button></div>';
+    h += '<div class="ed-days"><span class="ed-l">Training days · pick 3</span><div class="chips">'+[1,2,3,4,5,6,0].map(n => '<button class="chip" data-edday="'+n+'" aria-pressed="'+d.days.includes(n)+'">'+DOW_NAMES[n]+'</button>').join('')+'</div>'+
+      '<span class="sub">Week 1 runs A, B, C on these days; week 2 runs D, E, F.</span></div>';
+    if (d.msg) h += '<p class="msg err ed-msg">'+esc(d.msg)+'</p>';
+    h += '<div class="card-actions"><button class="primary" data-edsave="1">Save workout</button><button class="ghost-btn" data-edcancel="1">Cancel</button>'+
+      '<button class="danger" data-edreset="1">Reset to original</button></div>';
+    card.innerHTML = h;
+  }
+  function saveEdit(){
+    readDraft();
+    const d = edDraft, L = editing;
+    const ex = d.ex.filter(x => (x.n || "").trim());
+    if (!ex.length) { d.msg = "Add at least one exercise."; renderLog(); return; }
+    for (const x of ex) {
+      if (!(x.sets >= 1 && x.sets <= 10)) { d.msg = (x.n || "An exercise")+": sets must be 1 to 10."; renderLog(); return; }
+      if (!(x.lo >= 1 && x.hi >= x.lo && x.hi <= 50)) { d.msg = (x.n || "An exercise")+": check the rep range (the second number can't be lower than the first)."; renderLog(); return; }
+    }
+    if (d.days.length !== 3) { d.msg = "Pick exactly 3 training days."; renderLog(); return; }
+    const names = Object.assign({}, planDoc.names || {});
+    const rows = ex.map(x => {
+      const n = x.n.trim().slice(0, 60);
+      // Same name keeps its id (and its history); a new or renamed exercise gets a fresh id
+      const id = x.id && (EXNAMES[x.id] || "").toLowerCase() === n.toLowerCase() ? x.id : "x" + newId();
+      names[id] = n;
+      return [n, x.sets + " × " + x.lo + (x.hi > x.lo ? "–" + x.hi : "") + (x.sfx ? " " + x.sfx : ""), !!x.opt, id];
+    });
+    const workouts = Object.assign({}, planDoc.workouts || {});
+    workouts[L] = {focus: (d.focus || "").trim().slice(0, 60) || WORKOUTS[L].focus, ex: rows};
+    planDoc = Object.assign({}, planDoc, {workouts, names, days: d.days.slice()});
+    Object.keys(drafts).forEach(k => delete drafts[k]);
+    editing = null; edDraft = null;
+    applyPlan(); persist("plan"); render();
+    const el = $("toast"); el.textContent = "Workout " + L + " saved"; el.hidden = false; el.classList.remove("show"); void el.offsetWidth; el.classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 2600);
+  }
+  function editorClick(e){
+    if (!editing) return false;
+    const t = e.target.closest("[data-edup],[data-eddown],[data-eddel],[data-edadd],[data-edday],[data-edsave],[data-edcancel],[data-edreset]");
+    if (!t) return false;
+    const d = edDraft; readDraft(); d.msg = "";
+    const ds = t.dataset;
+    if (ds.edup !== undefined) { const k = +ds.edup; if (k > 0) [d.ex[k-1], d.ex[k]] = [d.ex[k], d.ex[k-1]]; }
+    else if (ds.eddown !== undefined) { const k = +ds.eddown; if (k < d.ex.length-1) [d.ex[k+1], d.ex[k]] = [d.ex[k], d.ex[k+1]]; }
+    else if (ds.eddel !== undefined) { d.ex.splice(+ds.eddel, 1); }
+    else if (ds.edadd) { d.ex.push({n:"", sets:3, lo:8, hi:12, sfx:"", opt:false, id:null}); }
+    else if (ds.edday !== undefined) { const n = +ds.edday; d.days = d.days.includes(n) ? d.days.filter(x => x !== n) : d.days.concat([n]); }
+    else if (ds.edsave) { saveEdit(); return true; }
+    else if (ds.edcancel) { editing = null; edDraft = null; renderLog(); return true; }
+    else if (ds.edreset) { d.focus = DEFAULT_WORKOUTS[editing].focus; d.ex = DEFAULT_WORKOUTS[editing].ex.map(e => Object.assign({n:e[0], opt:!!e[2], id:e[3]}, specParts(e[1]))); d.days = DEFAULT_DAYS.slice(); d.msg = "Back to the original. Save to keep it."; }
+    renderLog();
+    if (ds.edadd) { const n = $("edN" + (d.ex.length-1)); if (n) n.focus(); }
+    else { const again = document.querySelector('[data-'+Object.keys(ds)[0].replace(/[A-Z]/g, c => "-" + c.toLowerCase())+'="'+Object.values(ds)[0]+'"]'); if (again && !again.disabled) again.focus({preventScroll:true}); }
+    return true;
+  }
+
   function renderLog(){
     const card = $("logCard");
     if (card.contains(document.activeElement) && document.activeElement.tagName === "INPUT") { pendingLog = true; return; }
     pendingLog = false;
+    if (editing) { renderEditor(card); return; }
     const t = todayId(); const locked = sel > t;
     const L = pickedLetter(); const W = WORKOUTS[L]; const sched = workoutFor(sel);
     const last = lastSessionOf(L, sel);
     let doneSets = 0, totalSets = 0, volume = 0;
 
-    let h = '<div class="card-head"><div class="card-title"><span class="plate"></span><h2>Workout '+L+'</h2><span class="count" id="logCount"></span></div>'+
+    let h = '<div class="card-head"><div class="card-title"><span class="plate"></span><h2>Workout '+L+'</h2><span class="count" id="logCount"></span><button class="link-btn" data-edit="'+L+'">Edit workout</button></div>'+
       '<div class="chips" role="group" aria-label="Choose workout">';
     LETTERS.forEach(M => { h += '<button class="chip" data-pick="'+M+'" aria-pressed="'+(M===L)+'" aria-label="Workout '+M+(M===sched?' (scheduled today)':'')+'">'+M+(M===sched?'<span class="sched"></span>':'')+'</button>'; });
     h += '</div><div class="sub">'+esc(W.focus)+' · '+
@@ -1262,13 +1422,8 @@ details.data summary{cursor:pointer;color:var(--muted);font-weight:600}
 
     // Lifting
     const names = []; LETTERS.forEach(L => WORKOUTS[L].ex.forEach(e => { if (!names.includes(e[0])) names.push(e[0]); }));
-    const hist = {};
-    sesDates().forEach(d => {
-      LETTERS.forEach(L => WORKOUTS[L].ex.forEach((e,i) => {
-        const sets = setsOf(d, L, i).filter(Boolean); if (!sets.length) return;
-        (hist[e[0]] = hist[e[0]] || []).push({d, sets});
-      }));
-    });
+    Object.values(EXNAMES).forEach(n => { if (!names.includes(n)) names.push(n); });
+    const hist = liftHistory();
     const withData = names.filter(n => hist[n]);
     h = '<div class="card-head"><div class="card-title"><span class="plate"></span><h2>Lifting</h2></div>';
     if (!withData.length) {
@@ -1373,6 +1528,7 @@ details.data summary{cursor:pointer;color:var(--muted);font-weight:600}
     setTimeout(() => { const f = document.querySelector("#sheet [data-autofocus]"); if (f) f.focus(); }, 30);
   }
   function closeSheet(){
+    stopScan(); clearTimeout(brandTimer); if (brandCtl) try { brandCtl.abort(); } catch(e) {}
     if (sheet && sheet.aiCtl) try { sheet.aiCtl.abort(); } catch(e) {}
     sheet = null; $("sheet").hidden = true; $("sheet").innerHTML = ""; document.body.style.overflow = "";
   }
@@ -1385,12 +1541,17 @@ details.data summary{cursor:pointer;color:var(--muted);font-weight:600}
     const slot = MEALS[sheet.slot].name;
     if (sheet.tab === "describe" && !canDescribe()) sheet.tab = "search";
     let h = '<div class="sh-back" data-close="1"></div><div class="sh" role="dialog" aria-modal="true" aria-labelledby="shTitle">';
-    if (sheet.mode === "add") {
+    if (sheet.mode === "scan") {
+      h += '<div class="sh-head"><button class="icon-btn" data-back="1" aria-label="Back to search"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h3 id="shTitle">Scan a barcode</h3>'+CLOSE_BTN+'</div>'+
+        '<div id="scanBox" class="scan-box"></div><p class="msg" id="scanMsg">Starting the camera…</p>'+
+        '<div class="field"><label for="scanCode">Or type the barcode number</label><div class="sq-row"><input id="scanCode" inputmode="numeric" autocomplete="off" placeholder="e.g. 5010029000061"><button class="ghost-btn" data-lookup="1">Look up</button></div></div>';
+    } else if (sheet.mode === "add") {
       h += '<div class="sh-head"><h3 id="shTitle">Add to '+esc(slot)+'</h3>'+CLOSE_BTN+'</div>'+
         '<div class="seg" role="group" aria-label="How to add" style="grid-template-columns:repeat('+(canDescribe()?3:2)+',1fr)">'+
         [["search","Search"],["describe","Describe"],["create","Create"]].filter(([k]) => k !== "describe" || canDescribe()).map(([k,l]) => '<button data-shtab="'+k+'" aria-pressed="'+(sheet.tab===k)+'">'+l+'</button>').join('')+'</div>';
       if (sheet.tab === "search") {
-        h += '<div class="field"><label for="shQ">Search foods</label><input id="shQ" type="search" autocomplete="off" placeholder="e.g. chicken, bagel, banana" value="'+esc(sheet.q||"")+'" data-autofocus></div><div class="res" id="shRes"></div>';
+        h += '<div class="field"><label for="shQ">Search foods'+(canBrands() ? ' and UK brands' : '')+'</label><div class="sq-row"><input id="shQ" type="search" autocomplete="off" placeholder="'+(canBrands() ? 'e.g. chicken, warburtons crumpets' : 'e.g. chicken, bagel, banana')+'" value="'+esc(sheet.q||"")+'" data-autofocus>'+
+          (canBrands() ? '<button class="ghost-btn scan-btn" data-scan="1" aria-label="Scan a barcode"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 8v8M10 8v8M13 8v8M17 8v8"/></svg>Scan</button>' : '')+'</div></div><div class="res" id="shRes"></div>';
       } else if (sheet.tab === "describe") {
         if (!sampleFn || sampleOff) {
           h += '<p class="msg">Estimates come from Claude, which isn\'t available in this view. Search the food list or create your own food instead.</p>';
@@ -1423,36 +1584,150 @@ details.data summary{cursor:pointer;color:var(--muted);font-weight:600}
     }
     el.innerHTML = h + '</div>';
     if (sheet.mode === "add" && sheet.tab === "search") renderResults();
-    if (sheet.mode !== "add") updatePreview();
+    if (sheet.mode === "amount" || sheet.mode === "edit") updatePreview();
+    if (sheet.mode === "scan") startScan();
+  }
+
+  // ---- Search: one ranked list, plus live UK branded products in the phone app ----
+  const qWords = q => q.toLowerCase().replace(/[^a-z0-9%&' ]+/g, " ").split(/\s+/).filter(Boolean)
+    .map(w => (w.length > 3 && /s$/.test(w) && !/ss$/.test(w)) ? w.slice(0, -1) : w);
+  // Every word must start a word in the name; earlier and fuller matches rank higher
+  function rankName(name, words){
+    const toks = name.toLowerCase().replace(/[^a-z0-9%&' ]+/g, " ").split(/\s+/).filter(Boolean);
+    let sc = 0;
+    for (let k = 0; k < words.length; k++) {
+      const w = words[k], at = toks.findIndex(t => t.startsWith(w));
+      if (at < 0) return -1;
+      sc += 10 - Math.min(at, 6) + (toks[at] === w || toks[at] === w + "s" ? 3 : 0);
+    }
+    return sc - toks.length * 0.4;
+  }
+  const brandCache = new Map();
+  let brandTimer = null, brandCtl = null;
+  const canBrands = () => STANDALONE && /^https?:$/.test(location.protocol);
+  function offFood(pr){
+    const nu = pr.nutriments || {};
+    let k = +nu["energy-kcal_100g"]; if (!(k > 0) && +nu["energy_100g"] > 0) k = +nu["energy_100g"] / 4.184;
+    const p = +nu.proteins_100g, c = +nu.carbohydrates_100g, f = +nu.fat_100g;
+    const name = String(pr.product_name_en || pr.product_name || "").trim();
+    if (!name || !(k > 0) || [p, c, f].some(v => !isFinite(v) || v < 0) || k > 950) return null;
+    const brand = String(pr.brands || "").split(",")[0].trim();
+    const full = brand && !name.toLowerCase().includes(brand.toLowerCase()) ? brand + " " + name : name;
+    const qty = String(pr.quantity || "");
+    const ml = /\d\s*(ml|cl|l)\b/i.test(qty) && !/\d\s*k?g\b/i.test(qty);
+    const u = [];
+    const sq = +pr.serving_quantity;
+    if (sq > 0 && sq < 2000) {
+      let lab = String(pr.serving_size || "").replace(/\(.*?\)/g, "").replace(/\d+(?:[.,]\d+)?\s*(g|ml)\b/gi, "").replace(/^\s*(1|one)\s+/i, "").replace(/[^A-Za-z ]+/g, " ").replace(/\s+/g, " ").trim().toLowerCase().slice(0, 24);
+      u.push([lab || "serving", sq]);
+    }
+    const mq = qty.match(/^\s*(\d+(?:[.,]\d+)?)\s*(g|kg|ml|cl|l)\s*$/i);
+    if (mq) { let g = parseFloat(mq[1].replace(",", ".")); const un = mq[2].toLowerCase(); if (un === "kg" || un === "l") g *= 1000; if (un === "cl") g *= 10; if (g > 0 && g <= 5000 && !u.some(x => Math.abs(x[1] - g) < 1)) u.push(["pack", g]); }
+    return {id: "off_" + String(pr.code).replace(/[^0-9A-Za-z]/g, ""), n: full.slice(0, 90), k: Math.round(k), p: r1(p), c: r1(c), f: r1(f), ml, u, brand: true};
+  }
+  function rememberBrand(fd){
+    FOODS[fd.id] = fd;
+    if (myFoods.some(x => x.id === fd.id)) return;
+    myFoods = myFoods.concat([{id: fd.id, brand: true, n: fd.n, k: fd.k, p: fd.p, c: fd.c, f: fd.f, u: fd.u, ml: fd.ml}]);
+    persist("myfoods");
+  }
+  function registerBrands(){ myFoods.forEach(x => { if (x && x.brand && x.id) FOODS[x.id] = {id: x.id, n: x.n, k: x.k, p: x.p, c: x.c, f: x.f, ml: !!x.ml, u: Array.isArray(x.u) ? x.u : [], brand: true}; }); }
+  const OFF_FIELDS = "code,product_name,product_name_en,brands,quantity,serving_size,serving_quantity,nutriments";
+  function brandSearch(q){
+    clearTimeout(brandTimer);
+    const box = $("brandRes"); if (!box) return;
+    if (!canBrands() || q.length < 3) { box.innerHTML = ""; return; }
+    if (!navigator.onLine) { box.innerHTML = '<div class="grp">UK brands</div><div class="none">Brand search needs a connection. Foods above work offline.</div>'; return; }
+    const hit = brandCache.get(q); if (hit) { showBrands(hit, q); return; }
+    box.innerHTML = '<div class="grp">UK brands</div><div class="none">Searching UK brands…</div>';
+    brandTimer = setTimeout(async () => {
+      if (brandCtl) brandCtl.abort(); const ctl = brandCtl = new AbortController();
+      try {
+        const url = "https://uk.openfoodfacts.org/cgi/search.pl?search_terms=" + encodeURIComponent(q) + "&search_simple=1&action=process&json=1&page_size=24&sort_by=unique_scans_n&fields=" + OFF_FIELDS;
+        const res = await fetch(url, {signal: ctl.signal}); if (!res.ok) throw new Error(res.status);
+        const data = await res.json();
+        const seen = new Set(), list = [];
+        (data.products || []).forEach(pr => { const fd = offFood(pr); if (fd && !seen.has(fd.id)) { seen.add(fd.id); list.push(fd); } });
+        brandCache.set(q, list);
+        if (sheet && (sheet.q || "").trim().toLowerCase() === q) showBrands(list, q);
+      } catch(e) {
+        if (e && e.name === "AbortError") return;
+        const b = $("brandRes"); if (b) b.innerHTML = '<div class="grp">UK brands</div><div class="none">Couldn\'t reach the brand database. Try again in a moment.</div>';
+      }
+    }, 650);
+  }
+  function showBrands(list, q){
+    const box = $("brandRes"); if (!box || !sheet) return;
+    sheet.brands = list;
+    box.innerHTML = '<div class="grp">UK brands · Open Food Facts</div>' + (list.length ? list.map((fd, i) => {
+      const u = fd.u[0];
+      return '<button data-pick="b:' + i + '"><span class="txt"><span class="name">' + esc(fd.n) + '</span><span class="detail">' + esc((u ? "1 " + u[0] + " (" + r1(u[1]) + " " + baseUnit(fd) + ") · " : "") + "per 100 " + baseUnit(fd) + ": P " + fd.p + " · C " + fd.c + " · F " + fd.f) + '</span></span><span class="meta"><b>' + fmtK(u ? fd.k * u[1] / 100 : fd.k) + ' kcal</b></span></button>';
+    }).join("") : '<div class="none">No UK brands match "' + esc(q) + '". Try the brand and product, like "warburtons crumpets", or scan the barcode.</div>');
   }
 
   function renderResults(){
     const box = $("shRes"); if (!box) return;
     const q = (sheet.q || "").trim().toLowerCase();
-    const words = q.split(/\s+/).filter(Boolean);
-    const match = name => words.every(w => name.toLowerCase().includes(w));
+    const words = qWords(q);
     let h = "";
-    const item = (pick, name, detail, kcal) => '<button data-pick="'+esc(pick)+'"><span class="txt"><span class="name">'+esc(name)+'</span><span class="detail">'+esc(detail)+'</span></span><span class="meta"><b>'+fmtK(kcal)+' kcal</b></span></button>';
+    const item = (pick, name, detail, kcal, tag) => '<button data-pick="'+esc(pick)+'"><span class="txt"><span class="name">'+esc(name)+(tag?'<span class="src">'+tag+'</span>':'')+'</span><span class="detail">'+esc(detail)+'</span></span><span class="meta"><b>'+fmtK(kcal)+' kcal</b></span></button>';
+    const unitDetail = fd => { const u = fd.u[0]; return u ? "1 "+u[0]+" ("+r1(u[1])+" "+baseUnit(fd)+")" : "per 100 "+baseUnit(fd)+" · P "+fd.p+" · C "+fd.c+" · F "+fd.f; };
+    const unitKcal = fd => { const u = fd.u[0]; return u ? fd.k*u[1]/100 : fd.k; };
     if (!words.length) {
       sheet.recent = recentEntries();
       if (sheet.recent.length) { h += '<div class="grp">Recent</div>'; sheet.recent.forEach((e,i) => { h += item("x:"+i, e.n, qtyLabel(e), entryTotals(e).k); }); }
       h += '<div class="grp">Planned '+esc(MEALS[sheet.slot].name.toLowerCase())+' options</div>';
       MEALS[sheet.slot].options.forEach((o,i) => { h += item("r:"+sheet.slot+":"+i, o.t, o.d, o.mk.k); });
-    } else {
-      const mine = myFoods.filter(c => match(c.n));
-      if (mine.length) { h += '<div class="grp">My foods</div>'; mine.forEach(c => { h += item("c:"+c.id, c.n, c.sv || "1 serving", c.k); }); }
-      const foods = FOOD_ROWS.map(r => FOODS[r[0]]).filter(fd => match(fd.n))
-        .sort((a,b) => (b.n.toLowerCase().startsWith(words[0]) - a.n.toLowerCase().startsWith(words[0])) || a.n.localeCompare(b.n)).slice(0, 30);
-      if (foods.length) { h += '<div class="grp">Foods</div>'; foods.forEach(fd => { const u = fd.u[0]; h += item("f:"+fd.id, fd.n, u ? "1 "+u[0]+" ("+r1(u[1])+" "+baseUnit(fd)+")" : "100 "+baseUnit(fd), u ? fd.k*u[1]/100 : fd.k); }); }
-      const plans = []; MEALS.forEach((m,s) => m.options.forEach((o,i) => { if (match(o.t) || match(m.name+" "+o.t)) plans.push([s,i,o]); }));
-      if (plans.length) { h += '<div class="grp">Planned meals</div>'; plans.forEach(([s,i,o]) => { h += item("r:"+s+":"+i, o.t, MEALS[s].name+" option", o.mk.k); }); }
-      const w0 = words[0];
-      const cf = COFID_IDS.map(id => FOODS[id]).filter(fd => match(fd.n))
-        .sort((a,b) => (b.n.toLowerCase().startsWith(w0) - a.n.toLowerCase().startsWith(w0)) || a.n.length - b.n.length).slice(0, 40);
-      if (cf.length) { h += '<div class="grp">UK food database</div>'; cf.forEach(fd => { h += item("f:"+fd.id, fd.n, "per 100 g · P "+fd.p+" · C "+fd.c+" · F "+fd.f, fd.k); }); }
-      if (!mine.length && !plans.length && !foods.length && !cf.length) h += '<div class="none">No match for "'+esc(sheet.q)+'". Try a simpler word, describe it for an estimate, or create it from the label.</div>';
+      box.innerHTML = h + '<div id="brandRes"></div>';
+      return;
     }
-    box.innerHTML = h;
+    const cands = [];
+    myFoods.forEach(c => { const sc = rankName(c.n, words); if (sc < 0) return;
+      if (c.brand) cands.push({sc: sc + 9, html: item("f:"+c.id, c.n, unitDetail(FOODS[c.id] || {u:[], k:c.k, p:c.p, c:c.c, f:c.f, ml:c.ml}), unitKcal(FOODS[c.id] || {u:[], k:c.k}), "Saved")});
+      else cands.push({sc: sc + 9, html: item("c:"+c.id, c.n, c.sv || "1 serving", c.k, "My food")}); });
+    MEALS.forEach((m,s) => m.options.forEach((o,i) => { const sc = Math.max(rankName(o.t, words), rankName(m.name+" "+o.t, words)); if (sc >= 0) cands.push({sc: sc + 4, html: item("r:"+s+":"+i, o.t, m.name+" · planned meal", o.mk.k, "Plan")}); }));
+    FOOD_ROWS.forEach(r => { const fd = FOODS[r[0]], sc = rankName(fd.n, words); if (sc >= 0) cands.push({sc: sc + 5, html: item("f:"+fd.id, fd.n, unitDetail(fd), unitKcal(fd))}); });
+    COFID_IDS.forEach(id => { const fd = FOODS[id], sc = rankName(fd.n, words); if (sc >= 0) cands.push({sc, html: item("f:"+fd.id, fd.n, unitDetail(fd), fd.k)}); });
+    cands.sort((a,b) => b.sc - a.sc);
+    if (cands.length) h += '<div class="grp">Best matches</div>' + cands.slice(0, 40).map(c => c.html).join("");
+    else h += '<div class="none">No match for "'+esc(sheet.q)+'" in the food list. '+(canBrands() ? 'Check the UK brands below, scan the barcode,' : 'Try a simpler word, describe it for an estimate,')+' or create it from the label.</div>';
+    if (!canBrands() && words.join("").length >= 3) h += '<div class="none">Branded products and barcode scanning work in the phone app.'+(canDescribe() ? ' Here, Describe can estimate a branded food.' : '')+'</div>';
+    box.innerHTML = h + '<div id="brandRes"></div>';
+    brandSearch(q);
+  }
+
+  // ---- Barcode scanning (phone app) ----
+  let scanner = null;
+  function loadScript(src){ return new Promise((ok, bad) => { const sc = document.createElement("script"); sc.src = src; sc.onload = ok; sc.onerror = bad; document.head.appendChild(sc); }); }
+  async function stopScan(){ const sc = scanner; scanner = null; if (sc) { try { await sc.stop(); } catch(e) {} try { sc.clear(); } catch(e) {} } }
+  async function startScan(){
+    const msg = $("scanMsg");
+    try {
+      if (!window.Html5Qrcode) await loadScript("https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js");
+      if (!sheet || sheet.mode !== "scan") return;
+      const H = window.Html5Qrcode, F = window.Html5QrcodeSupportedFormats || {};
+      scanner = new H("scanBox", {formatsToSupport: [F.EAN_13, F.EAN_8, F.UPC_A, F.UPC_E].filter(v => v !== undefined), verbose: false});
+      await scanner.start({facingMode: "environment"}, {fps: 10, qrbox: {width: 260, height: 140}}, code => { stopScan(); lookupBarcode(code); }, () => {});
+      if (msg) msg.textContent = "Point the camera at the barcode.";
+    } catch(e) {
+      if (msg) { msg.textContent = "Couldn't start the camera. Allow camera access for this app in Settings, or type the barcode number below."; msg.className = "msg err"; }
+    }
+  }
+  async function lookupBarcode(code){
+    code = String(code || "").replace(/\D/g, "");
+    const msg = $("scanMsg");
+    if (code.length < 8) { if (msg) { msg.textContent = "That doesn't look like a barcode number."; msg.className = "msg err"; } return; }
+    if (msg) { msg.textContent = "Looking up " + code + "…"; msg.className = "msg"; }
+    try {
+      const res = await fetch("https://world.openfoodfacts.org/api/v2/product/" + code + ".json?fields=" + OFF_FIELDS);
+      const data = await res.json();
+      const fd = data && data.status === 1 && data.product ? offFood(Object.assign({code}, data.product)) : null;
+      if (!sheet) return;
+      if (!fd) { if (msg) { msg.innerHTML = "Product " + esc(code) + " isn't in Open Food Facts with nutrition yet. <button class=\"link-btn\" data-shtab=\"create\">Create it from the label</button>"; msg.className = "msg"; } return; }
+      FOODS[fd.id] = fd;
+      sheet.mode = "amount"; sheet.tpl = {n: fd.n, fd, ui: fd.u.length ? 1 : 0, q: fd.u.length ? 1 : 100, detail: "Per 100 " + baseUnit(fd) + ": " + fd.k + " kcal · P " + fd.p + " · C " + fd.c + " · F " + fd.f};
+      renderSheet(); const f = $("amtQty"); if (f) f.select();
+    } catch(e) { if (msg) { msg.textContent = "Couldn't reach the brand database. Check your connection and try again."; msg.className = "msg err"; } }
   }
 
   function tplFor(pick){
@@ -1461,6 +1736,7 @@ details.data summary{cursor:pointer;color:var(--muted);font-weight:600}
     if (kind === "r") { const s = +a, i = +b, o = MEALS[s].options[i]; return {n:o.t, src:"r:"+s+":"+i, u:"meal", q:1, k:o.mk.k, p:o.mk.p, c:o.mk.c, f:o.mk.f, detail:o.d}; }
     if (kind === "c") { const c = myFoods.find(x => x.id === a); if (!c) return null; return {n:c.n, src:"c:"+c.id, u:c.sv || "serving", q:1, k:c.k, p:c.p, c:c.c, f:c.f}; }
     if (kind === "x") { const e = sheet.recent && sheet.recent[+a]; if (!e) return null; return tplFromEntry(e); }
+    if (kind === "b") { const fd = sheet.brands && sheet.brands[+a]; if (!fd) return null; FOODS[fd.id] = fd; return {n:fd.n, fd, ui: fd.u.length ? 1 : 0, q: fd.u.length ? 1 : 100, detail:"Per 100 "+baseUnit(fd)+": "+fd.k+" kcal · P "+fd.p+" · C "+fd.c+" · F "+fd.f}; }
     return null;
   }
   function tplFromEntry(e){
@@ -1536,13 +1812,16 @@ details.data summary{cursor:pointer;color:var(--muted);font-weight:600}
   function sheetClick(e){
     if (e.target.closest("[data-close]")) { closeSheet(); return true; }
     if (!sheet) return false;
-    const t = e.target.closest("[data-shtab],[data-pick],[data-back],[data-addamt],[data-saveedit],[data-delete],[data-estimate],[data-stop],[data-aiadd],[data-create]");
+    const t = e.target.closest("[data-shtab],[data-pick],[data-back],[data-addamt],[data-saveedit],[data-delete],[data-estimate],[data-stop],[data-aiadd],[data-create],[data-scan],[data-lookup]");
     if (!t) return !!e.target.closest("#sheet");
     const slotKey = MEALS[sheet.slot].k;
-    if (t.dataset.shtab) { const ta = $("aiText"); if (ta) sheet.aiText = ta.value; sheet.tab = t.dataset.shtab; renderSheet(); const f = document.querySelector("#sheet [data-autofocus]"); if (f) f.focus(); }
+    if (t.dataset.scan) { sheet.mode = "scan"; renderSheet(); return true; }
+    if (t.dataset.lookup) { lookupBarcode(($("scanCode") || {}).value); return true; }
+    if (sheet.mode === "scan" && (t.dataset.back || t.dataset.shtab)) stopScan();
+    if (t.dataset.shtab) { const ta = $("aiText"); if (ta) sheet.aiText = ta.value; sheet.mode = "add"; sheet.tab = t.dataset.shtab; renderSheet(); const f = document.querySelector("#sheet [data-autofocus]"); if (f) f.focus(); }
     else if (t.dataset.pick) { const tp = tplFor(t.dataset.pick); if (tp) { sheet.mode = "amount"; sheet.tpl = tp; renderSheet(); const f = $("amtQty"); if (f) { f.focus(); f.select(); } } }
     else if (t.dataset.back) { sheet.mode = "add"; sheet.tpl = null; renderSheet(); }
-    else if (t.dataset.addamt) { const en = readAmount(); if (!en) { $("amtQty").focus(); return true; } addEntries([Object.assign({s:slotKey}, en)]); closeSheet(); render(); }
+    else if (t.dataset.addamt) { const en = readAmount(); if (!en) { $("amtQty").focus(); return true; } if (sheet.tpl.fd && sheet.tpl.fd.brand) rememberBrand(sheet.tpl.fd); addEntries([Object.assign({s:slotKey}, en)]); closeSheet(); render(); }
     else if (t.dataset.saveedit) {
       const en = readAmount(); if (!en) { $("amtQty").focus(); return true; }
       setDayFood(dayFood(sel).map(x => x.id === sheet.entryId ? Object.assign({}, x, en, {id:x.id, s:x.s}) : x)); closeSheet(); render();
@@ -1568,6 +1847,7 @@ details.data summary{cursor:pointer;color:var(--muted);font-weight:600}
   function bodyFor(id){
     if (id === "settings") return Object.assign({}, settings);
     if (id === "myfoods") return {items: JSON.parse(JSON.stringify(myFoods))};
+    if (id === "plan") return JSON.parse(JSON.stringify(planDoc));
     const m = id.match(SES_RE);
     if (m) return JSON.parse(JSON.stringify(sessions[m[1]] || {ex:{}}));
     return JSON.parse(JSON.stringify(days[id] || {}));
@@ -1621,25 +1901,15 @@ details.data summary{cursor:pointer;color:var(--muted);font-weight:600}
     const [L, iS, jS] = idb.split("-"); const i = +iS, j = +jS;
     const ses = sessions[sel] ? JSON.parse(JSON.stringify(sessions[sel])) : {ex:{}};
     ses.ex = ses.ex || {};
-    const arr = (ses.ex[L+i] || []).slice();
+    const key = exId(L, i);
+    const arr = (ses.ex[key] || []).slice();
     while (arr.length <= j) arr.push(null);
-    const before = arr.filter(Boolean).length;
     arr[j] = value;
     while (arr.length && arr[arr.length-1] === null) arr.pop();
-    if (arr.length) ses.ex[L+i] = arr; else delete ses.ex[L+i];
+    if (arr.length) ses.ex[key] = arr; else delete ses.ex[key];
     ses.updated = new Date().toISOString();
     sessions[sel] = ses;
     persist("w-"+sel);
-    // Keep the Today checklist in step: an exercise ticks itself once every set is logged
-    if (workoutFor(sel) === L) {
-      const need = plan(WORKOUTS[L].ex[i][1]).sets, after = arr.filter(Boolean).length;
-      const k = exKey(L,i);
-      const day = Object.assign({}, days[sel] || {}); const checks = Object.assign({}, day.checks || {});
-      let changed = false;
-      if (after >= need && before < need && !checks[k]) { checks[k] = true; changed = true; }
-      if (after < need && before >= need && checks[k]) { delete checks[k]; changed = true; }
-      if (changed) { day.checks = checks; day.updated = ses.updated; days[sel] = day; persist(sel); }
-    }
   }
   function tickSet(idb){
     if (sel > todayId()) return;
@@ -1663,6 +1933,8 @@ details.data summary{cursor:pointer;color:var(--muted);font-weight:600}
 
   document.addEventListener("click", e => {
     if (sheetClick(e)) return;
+    if (editorClick(e)) return;
+    const ed = e.target.closest("[data-edit]"); if (ed) { startEdit(ed.dataset.edit); return; }
     const ao = e.target.closest("[data-actopen]"); if (ao) { actOpen = true; actPick = null; renderBonus(); return; }
     const apk = e.target.closest("[data-actpick]"); if (apk) { actPick = apk.dataset.actpick; renderBonus(); const m = $("actName") || $("actMin"); if (m) m.focus(); return; }
     const aad = e.target.closest("[data-actadd]"); if (aad) { addAct(); return; }
@@ -1685,7 +1957,7 @@ details.data summary{cursor:pointer;color:var(--muted);font-weight:600}
     if (r) { if (r.getAttribute("aria-disabled") !== "true") { const k = r.dataset.key; toggle(k); const again = document.querySelector('.row[data-key="'+k+'"]'); if (again) again.focus({preventScroll:true}); } return; }
     const sw = e.target.closest("[data-swap]"); if (sw) { swapMeal(+sw.dataset.swap); return; }
     const tk = e.target.closest("[data-tick]"); if (tk && !tk.disabled) { tickSet(tk.dataset.tick); return; }
-    const pk = e.target.closest("[data-pick]"); if (pk) { logPick[sel] = pk.dataset.pick; renderLog(); return; }
+    const pk = e.target.closest("[data-pick]"); if (pk) { logPick[sel] = pk.dataset.pick; editing = null; edDraft = null; renderLog(); return; }
     const tb = e.target.closest("[data-view]"); if (tb) { go(tb.dataset.view); return; }
     const g = e.target.closest("[data-go]"); if (g) { go(g.dataset.go); return; }
     const d = e.target.closest("[data-day]"); if (d) { sel = d.dataset.day; render(); }
@@ -1722,6 +1994,7 @@ details.data summary{cursor:pointer;color:var(--muted);font-weight:600}
     if (sheet) {
       if (e.key === "Escape") { closeSheet(); return; }
       if (e.key === "Enter" && el.id === "amtQty") { e.preventDefault(); const b = document.querySelector("#sheet [data-addamt],#sheet [data-saveedit]"); if (b) b.click(); return; }
+      if (e.key === "Enter" && el.id === "scanCode") { e.preventDefault(); lookupBarcode(el.value); return; }
       if (e.key === "Enter" && el.id === "shQ") { e.preventDefault(); const b = document.querySelector("#shRes [data-pick]"); if (b) b.click(); return; }
       if (e.key === "Enter" && el.id === "aiText" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); estimate(); return; }
       return;
@@ -1757,6 +2030,7 @@ details.data summary{cursor:pointer;color:var(--muted);font-weight:600}
   document.addEventListener("visibilitychange", () => { if (!document.hidden) render(); });
   let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { if (view === "progress") renderProgress(); }, 150); });
 
+  registerBrands();
   render();
 
   // ---- Back up and restore (also how logs move between the claude.ai version and the phone app) ----
@@ -1834,9 +2108,10 @@ details.data summary{cursor:pointer;color:var(--muted);font-weight:600}
     mode = "cloud";
     let first = true;
     coll.onSnapshot(snap => {
-      const cloudDays = {}, cloudSes = {}; let cloudSettings = null, cloudFoods = null;
+      const cloudDays = {}, cloudSes = {}; let cloudSettings = null, cloudFoods = null, cloudPlan = null;
       snap.docs.forEach(doc => {
         if (doc.id === "settings") cloudSettings = doc.data();
+        else if (doc.id === "plan") cloudPlan = doc.data() || {};
         else if (doc.id === "myfoods") { const d = doc.data(); cloudFoods = d && Array.isArray(d.items) ? d.items : []; }
         else if (DAY_RE.test(doc.id)) cloudDays[doc.id] = doc.data();
         else { const m = doc.id.match(SES_RE); if (m) cloudSes[m[1]] = doc.data(); }
@@ -1848,8 +2123,10 @@ details.data summary{cursor:pointer;color:var(--muted);font-weight:600}
         for (const d in sessions) if (!cloudSes[d]) { cloudSes[d] = sessions[d]; push.push("w-"+d); }
         if (!cloudSettings && settings.cycleStart !== DEFAULT_CYCLE_START) push.push("settings");
         if (!cloudFoods && myFoods.length) push.push("myfoods");
+        if (!cloudPlan && Object.keys(planDoc).length) push.push("plan");
       }
-      if (cloudFoods && !writing.myfoods && !dirty.myfoods) myFoods = cloudFoods.slice();
+      if (cloudPlan && !writing.plan && !dirty.plan) { planDoc = cloudPlan; applyPlan(); }
+      if (cloudFoods && !writing.myfoods && !dirty.myfoods) { myFoods = cloudFoods.slice(); registerBrands(); }
       for (const id in days) if (writing[id] || dirty[id]) cloudDays[id] = days[id];
       for (const d in sessions) if (writing["w-"+d] || dirty["w-"+d]) cloudSes[d] = sessions[d];
       days = cloudDays; sessions = cloudSes;
